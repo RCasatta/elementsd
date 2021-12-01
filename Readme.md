@@ -5,4 +5,4 @@
 
 Utility to run a liquidregtest elementsd process, useful in integration testing environment.
 
-See the similar [Bitcoind](https://github.com/RCasatta/bitcoind) for details
+See the similar [BitcoinD](https://github.com/RCasatta/bitcoind) for details

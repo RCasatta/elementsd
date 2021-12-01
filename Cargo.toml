@@ -1,6 +1,6 @@
 [package]
 name = "elementsd"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2018"
 authors = ["Riccardo Casatta <riccardo@casatta.it>"]
 description = "Utility to run a liquidregtest elements process, useful in integration testing environment"
