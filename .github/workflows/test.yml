@@ -1,0 +1,74 @@
+name: Test
+
+on: [push, pull_request]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+
+  test:
+    runs-on: ${{ matrix.os }}
+    env:
+      RUST_LOG: bitcoind=debug
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ "ubuntu-20.04", "macos-10.15" ]
+        feature: [ "bitcoind_22_0,0_18_1_12", "bitcoind_22_0,0_21_0"]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: Swatinem/rust-cache@v1.2.0
+        with:
+          key: ${{ matrix.feature }}${{ matrix.os }}
+        if: ${{ matrix.os != 'macos-10.15' }} # issue with hard-links on mac
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --features ${{ matrix.feature }}
+      - run: echo "BITCOIND_EXE=$(find ./target/debug -name bitcoind)" >> $GITHUB_ENV
+      - run: echo "ELEMENTSD_EXE=$(find ./target/debug -name elementsd)" >> $GITHUB_ENV
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+
+  cosmetics:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: Swatinem/rust-cache@v1.2.0
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+          components: rustfmt, clippy
+      - name: fmt
+        run: cargo fmt -- --check
+      - name: clippy
+        run: cargo clippy -- -D warnings
+
+  rust-version:
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain: [ "1.41.1", "stable", "nightly" ]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: Swatinem/rust-cache@v1.2.0
+        with:
+          key: ${{ matrix.version }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build

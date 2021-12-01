@@ -1,6 +1,6 @@
-use std::ffi::OsStr;
 use bitcoind::bitcoincore_rpc::Client;
 use bitcoind::BitcoinD;
+use std::ffi::OsStr;
 
 mod versions;
 
@@ -19,23 +19,31 @@ pub enum Error {
 impl Conf<'_> {
     pub fn new(validate_pegin: Option<&BitcoinD>) -> Self {
         let mut bitcoind_conf = bitcoind::Conf::default();
-        let mut args = vec!["-fallbackfee=0.0001", "-dustrelayfee=0.00000001", "-chain=liquidregtest", "-initialfreecoins=2100000000"];
+        let mut args = vec![
+            "-fallbackfee=0.0001",
+            "-dustrelayfee=0.00000001",
+            "-chain=liquidregtest",
+            "-initialfreecoins=2100000000",
+        ];
         match validate_pegin.as_ref() {
             Some(bitcoind) => {
                 args.push("-validatepegin=1");
-                /*let mut f = File::open(&bitcoind.params.cookie_file).unwrap();
-                let mut buffer = String::new();
-                f.read_to_string(&mut buffer).unwrap();
-                let vec: Vec<_> = buffer.split(":").collect();
-                println!("cookie user:{} value:{}", vec[0], vec[1]);
-                args.push(string_to_static_str(format!("-mainchainrpcuser={}", vec[0])));
-                args.push(string_to_static_str(format!("-mainchainrpcpassword={}", vec[1])));*/
-                args.push(string_to_static_str(format!("-mainchainrpccookiefile={}", bitcoind.params.cookie_file.display())));
-                args.push(string_to_static_str(format!("-mainchainrpchost={}", bitcoind.params.rpc_socket.ip())));
-                args.push(string_to_static_str(format!("-mainchainrpcport={}", bitcoind.params.rpc_socket.port())));
+
+                args.push(string_to_static_str(format!(
+                    "-mainchainrpccookiefile={}",
+                    bitcoind.params.cookie_file.display()
+                )));
+                args.push(string_to_static_str(format!(
+                    "-mainchainrpchost={}",
+                    bitcoind.params.rpc_socket.ip()
+                )));
+                args.push(string_to_static_str(format!(
+                    "-mainchainrpcport={}",
+                    bitcoind.params.rpc_socket.port()
+                )));
             }
             None => {
-                args.push("-validatepegin=0" );
+                args.push("-validatepegin=0");
             }
         }
 
@@ -83,7 +91,6 @@ pub fn downloaded_exe_path() -> Option<String> {
     }
 }
 
-
 impl From<bitcoind::Error> for Error {
     fn from(e: bitcoind::Error) -> Self {
         Error::BitcoinD(e)
@@ -97,18 +104,21 @@ fn string_to_static_str(s: String) -> &'static str {
 
 #[cfg(test)]
 mod tests {
-    use std::env;
+    use crate::{downloaded_exe_path, Conf, ElementsD};
     use bitcoind::bitcoincore_rpc::jsonrpc::serde_json::Value;
-    use crate::{Conf, downloaded_exe_path, ElementsD};
     use bitcoind::bitcoincore_rpc::RpcApi;
     use bitcoind::BitcoinD;
+    use std::env;
 
     #[test]
     fn test_elementsd() {
         let exe = init();
         let elementsd = ElementsD::new(exe).unwrap();
-        let info = elementsd.client().call::<Value>("getblockchaininfo", &[]).unwrap();
-        assert_eq!( info.get("chain").unwrap(), "liquidregtest");
+        let info = elementsd
+            .client()
+            .call::<Value>("getblockchaininfo", &[])
+            .unwrap();
+        assert_eq!(info.get("chain").unwrap(), "liquidregtest");
     }
 
     #[test]
@@ -119,8 +129,11 @@ mod tests {
         let conf = Conf::new(Some(&bitcoind));
         let exe = init();
         let elementsd = ElementsD::with_conf(exe, &conf).unwrap();
-        let info = elementsd.client().call::<Value>("getblockchaininfo", &[]).unwrap();
-        assert_eq!( info.get("chain").unwrap(), "liquidregtest");
+        let info = elementsd
+            .client()
+            .call::<Value>("getblockchaininfo", &[])
+            .unwrap();
+        assert_eq!(info.get("chain").unwrap(), "liquidregtest");
     }
 
     fn exe_path() -> String {
@@ -137,12 +150,11 @@ mod tests {
         if let Some(downloaded_exe_path) = bitcoind::downloaded_exe_path() {
             downloaded_exe_path
         } else {
-            env::var("BITCOINDD_EXE").expect(
+            env::var("BITCOIND_EXE").expect(
                 "when no version feature is specified, you must specify BITCOIND_EXE env var",
             )
         }
     }
-
 
     fn init() -> String {
         let _ = env_logger::try_init();
