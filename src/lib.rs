@@ -1,6 +1,10 @@
 use bitcoind::bitcoincore_rpc::Client;
 use bitcoind::BitcoinD;
 use std::ffi::OsStr;
+use std::fmt;
+
+pub use bitcoind;
+pub use bitcoind::bitcoincore_rpc;
 
 mod versions;
 
@@ -10,10 +14,29 @@ pub struct ElementsD(BitcoinD);
 pub struct Conf<'a>(bitcoind::Conf<'a>);
 
 /// All the possible error in this crate
-#[derive(Debug)]
 pub enum Error {
     /// Wrapper of bitcoind Error
     BitcoinD(bitcoind::Error),
+    /// Returned when calling methods requiring a feature to be activated, but it's not
+    NoFeature,
+    /// Returned when calling methods requiring a env var to exist, but it's not
+    NoEnvVar,
+    /// Returned when calling methods requiring either a feature or env var, but both are absent
+    NeitherFeatureNorEnvVar,
+    /// Returned when calling methods requiring either a feature or anv var, but both are present
+    BothFeatureAndEnvVar,
+}
+
+impl fmt::Debug for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::BitcoinD(e) => write!(f, "{:?}", e),
+            Error::NoFeature => write!(f, "Called a method requiring a feature to be set, but it's not"),
+            Error::NoEnvVar => write!(f, "Called a method requiring env var `ELEMENTSD_EXE` to be set, but it's not"),
+            Error::NeitherFeatureNorEnvVar =>  write!(f, "Called a method requiring env var `ELEMENTSD_EXE` or a feature to be set, but neither are set"),
+            Error::BothFeatureAndEnvVar => write!(f, "Called a method requiring env var `ELEMENTSD_EXE` or a feature to be set, but both are set"),
+        }
+    }
 }
 
 impl Conf<'_> {
@@ -78,16 +101,27 @@ impl ElementsD {
     }
 }
 
+/// Returns the daemons executable path, if it's provided as a feature or as `ELEMENTSD_EXE` env var
+/// If both are set, the one provided by the feature is returned
+pub fn exe_path() -> Result<String, Error> {
+    match (downloaded_exe_path(), std::env::var("ELEMENTSD_EXE")) {
+        (Ok(_), Ok(_)) => Err(Error::BothFeatureAndEnvVar),
+        (Ok(path), Err(_)) => Ok(path),
+        (Err(_), Ok(path)) => Ok(path),
+        (Err(_), Err(_)) => Err(Error::NeitherFeatureNorEnvVar),
+    }
+}
+
 /// Provide the bitcoind executable path if a version feature has been specified
-pub fn downloaded_exe_path() -> Option<String> {
+pub fn downloaded_exe_path() -> Result<String, Error> {
     if versions::HAS_FEATURE {
-        Some(format!(
+        Ok(format!(
             "{}/elements/elements-{}/bin/elementsd",
             env!("OUT_DIR"),
             versions::VERSION
         ))
     } else {
-        None
+        Err(Error::NoFeature)
     }
 }
 
@@ -104,11 +138,10 @@ fn string_to_static_str(s: String) -> &'static str {
 
 #[cfg(test)]
 mod tests {
-    use crate::{downloaded_exe_path, Conf, ElementsD};
+    use crate::{exe_path, Conf, ElementsD};
     use bitcoind::bitcoincore_rpc::jsonrpc::serde_json::Value;
     use bitcoind::bitcoincore_rpc::RpcApi;
     use bitcoind::BitcoinD;
-    use std::env;
 
     #[test]
     fn test_elementsd() {
@@ -123,7 +156,7 @@ mod tests {
 
     #[test]
     fn test_elementsd_with_validatepegin() {
-        let bitcoind_exe = bitcoind_exe_path();
+        let bitcoind_exe = bitcoind::exe_path().unwrap();
         let bitcoind_conf = bitcoind::Conf::default();
         let bitcoind = BitcoinD::with_conf(&bitcoind_exe, &bitcoind_conf).unwrap();
         let conf = Conf::new(Some(&bitcoind));
@@ -136,28 +169,8 @@ mod tests {
         assert_eq!(info.get("chain").unwrap(), "liquidregtest");
     }
 
-    fn exe_path() -> String {
-        if let Some(downloaded_exe_path) = downloaded_exe_path() {
-            downloaded_exe_path
-        } else {
-            env::var("ELEMENTSD_EXE").expect(
-                "when no version feature is specified, you must specify ELEMENTSD_EXE env var",
-            )
-        }
-    }
-
-    fn bitcoind_exe_path() -> String {
-        if let Some(downloaded_exe_path) = bitcoind::downloaded_exe_path() {
-            downloaded_exe_path
-        } else {
-            env::var("BITCOIND_EXE").expect(
-                "when no version feature is specified, you must specify BITCOIND_EXE env var",
-            )
-        }
-    }
-
     fn init() -> String {
         let _ = env_logger::try_init();
-        exe_path()
+        exe_path().unwrap()
     }
 }
