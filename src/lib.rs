@@ -11,7 +11,7 @@ mod versions;
 pub struct ElementsD(BitcoinD);
 
 #[non_exhaustive]
-pub struct Conf<'a>(bitcoind::Conf<'a>);
+pub struct Conf<'a>(pub bitcoind::Conf<'a>);
 
 /// All the possible error in this crate
 pub enum Error {
