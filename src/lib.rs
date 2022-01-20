@@ -1,5 +1,5 @@
 use bitcoind::bitcoincore_rpc::Client;
-use bitcoind::BitcoinD;
+use bitcoind::{BitcoinD, ConnectParams};
 use std::ffi::OsStr;
 use std::fmt;
 
@@ -98,6 +98,10 @@ impl ElementsD {
 
     pub fn client(&self) -> &Client {
         &self.0.client
+    }
+
+    pub fn params(&self) -> &ConnectParams {
+        &self.0.params
     }
 }
 
