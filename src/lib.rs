@@ -104,6 +104,14 @@ impl ElementsD {
     pub fn params(&self) -> &ConnectParams {
         &self.0.params
     }
+
+    pub fn rpc_url(&self) -> String {
+        self.0.rpc_url()
+    }
+
+    pub fn rpc_url_with_wallet<T: AsRef<str>>(&self, wallet_name: T) -> String {
+        self.0.rpc_url_with_wallet(wallet_name)
+    }
 }
 
 /// Returns the daemons executable path, if it's provided as a feature or as `ELEMENTSD_EXE` env var
@@ -174,6 +182,18 @@ mod tests {
             .call::<Value>("getblockchaininfo", &[])
             .unwrap();
         assert_eq!(info.get("chain").unwrap(), "liquidregtest");
+    }
+
+    #[test]
+    fn test_rpc_url() {
+        let exe = init();
+        let elementsd = ElementsD::new(exe).unwrap();
+        assert!(elementsd.rpc_url().starts_with("http://"));
+        let socket = elementsd.params().rpc_socket.to_string();
+        assert!(elementsd.rpc_url().ends_with(&socket));
+        let url_with_wallet = elementsd.rpc_url_with_wallet("wallet_name");
+        assert!(url_with_wallet.starts_with("http://"));
+        assert!(url_with_wallet.ends_with("/wallet/wallet_name"));
     }
 
     fn init() -> String {
