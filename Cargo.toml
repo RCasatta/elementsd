@@ -13,6 +13,7 @@ documentation = "https://docs.rs/elementsd/"
 
 [dependencies]
 bitcoind = "0.26.0"
+which = "4.2.5"  # TODO use bitcoind re-export when available
 
 [dev-dependencies]
 env_logger = "0.8"

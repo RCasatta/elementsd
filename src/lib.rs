@@ -21,10 +21,11 @@ pub enum Error {
     NoFeature,
     /// Returned when calling methods requiring a env var to exist, but it's not
     NoEnvVar,
-    /// Returned when calling methods requiring either a feature or env var, but both are absent
-    NeitherFeatureNorEnvVar,
     /// Returned when calling methods requiring either a feature or anv var, but both are present
     BothFeatureAndEnvVar,
+    /// Returned when calling methods requiring the `elementsd` executable but none is found
+    /// (no feature, no `ELEMENTSD_EXE`, no `elementsd` in `PATH` )
+    NoElementsdExecutableFound,
 }
 
 impl fmt::Debug for Error {
@@ -33,8 +34,8 @@ impl fmt::Debug for Error {
             Error::BitcoinD(e) => write!(f, "{:?}", e),
             Error::NoFeature => write!(f, "Called a method requiring a feature to be set, but it's not"),
             Error::NoEnvVar => write!(f, "Called a method requiring env var `ELEMENTSD_EXE` to be set, but it's not"),
-            Error::NeitherFeatureNorEnvVar =>  write!(f, "Called a method requiring env var `ELEMENTSD_EXE` or a feature to be set, but neither are set"),
             Error::BothFeatureAndEnvVar => write!(f, "Called a method requiring env var `ELEMENTSD_EXE` or a feature to be set, but both are set"),
+            Error::NoElementsdExecutableFound =>  write!(f, "Called a method requiring env var `ELEMENTSD_EXE` or a feature to be set or `elementsd` executable in path"),
         }
     }
 }
@@ -112,7 +113,9 @@ pub fn exe_path() -> Result<String, Error> {
         (Ok(_), Ok(_)) => Err(Error::BothFeatureAndEnvVar),
         (Ok(path), Err(_)) => Ok(path),
         (Err(_), Ok(path)) => Ok(path),
-        (Err(_), Err(_)) => Err(Error::NeitherFeatureNorEnvVar),
+        (Err(_), Err(_)) => which::which("elementsd")
+            .map_err(|_| Error::NoElementsdExecutableFound)
+            .map(|p| p.display().to_string()),
     }
 }
 
