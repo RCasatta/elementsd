@@ -1,6 +1,6 @@
 [package]
 name = "elementsd"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2018"
 authors = ["Riccardo Casatta <riccardo@casatta.it>"]
 description = "Utility to run a liquidregtest elements process, useful in integration testing environment"
@@ -12,8 +12,7 @@ documentation = "https://docs.rs/elementsd/"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bitcoind = "0.27.0"
-which = "4.2.5"  # TODO use bitcoind re-export when available
+bitcoind = "0.29.0"
 
 [dev-dependencies]
 env_logger = "0.8"
@@ -25,9 +24,11 @@ flate2 = "1.0"
 tar = "0.4"
 
 [features]
+"22_1_1" = []
 "0_21_0" = []
 "0_18_1_12" = []
 
+bitcoind_23_0 = ["bitcoind/23_0"]
 bitcoind_22_0 = ["bitcoind/22_0"]
 bitcoind_0_21_1 = ["bitcoind/0_21_1"]
 bitcoind_0_21_0 = ["bitcoind/0_21_0"]
@@ -37,3 +38,4 @@ bitcoind_0_19_1 = ["bitcoind/0_19_1"]
 bitcoind_0_19_0_1 = ["bitcoind/0_19_0_1"]
 bitcoind_0_18_1 = ["bitcoind/0_18_1"]
 bitcoind_0_18_0 = ["bitcoind/0_18_0"]
+
