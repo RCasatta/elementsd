@@ -1,7 +1,11 @@
 use bitcoind::bitcoincore_rpc::Client;
+use bitcoind::{
+    anyhow::{self, Context},
+    which,
+};
 use bitcoind::{BitcoinD, ConnectParams};
 use std::ffi::OsStr;
-use std::fmt;
+use std::{error, fmt};
 
 pub use bitcoind;
 pub use bitcoind::bitcoincore_rpc;
@@ -29,6 +33,15 @@ pub enum Error {
     NoElementsdExecutableFound,
 }
 
+impl error::Error for Error {
+    fn cause(&self) -> Option<&dyn error::Error> {
+        match *self {
+            Error::BitcoinD(ref e) => Some(e),
+            _ => None,
+        }
+    }
+}
+
 impl fmt::Debug for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -38,6 +51,12 @@ impl fmt::Debug for Error {
             Error::BothFeatureAndEnvVar => write!(f, "Called a method requiring env var `ELEMENTSD_EXE` or a feature to be set, but both are set"),
             Error::NoElementsdExecutableFound =>  write!(f, "Called a method requiring env var `ELEMENTSD_EXE` or a feature to be set or `elementsd` executable in path"),
         }
+    }
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(self, f)
     }
 }
 
@@ -89,13 +108,15 @@ impl ElementsD {
     /// Launch the elementsd process from the given `exe` executable with default args.
     ///
     /// Waits for the node to be ready to accept connections before returning
-    pub fn new<S: AsRef<OsStr>>(exe: S) -> Result<ElementsD, Error> {
+    pub fn new<S: AsRef<OsStr>>(exe: S) -> anyhow::Result<ElementsD> {
         ElementsD::with_conf(exe, &Conf::default())
     }
 
     /// Launch the elementsd process from the given `exe` executable with given [Conf] param
-    pub fn with_conf<S: AsRef<OsStr>>(exe: S, conf: &Conf) -> Result<ElementsD, Error> {
-        Ok(ElementsD(BitcoinD::with_conf(exe, &conf.0).unwrap())) // TODO unwrap temporary
+    pub fn with_conf<S: AsRef<OsStr>>(exe: S, conf: &Conf) -> anyhow::Result<ElementsD> {
+        let bitcoind = BitcoinD::with_conf(exe, &conf.0)
+            .with_context(|| "creating bitcoind object for elements daemon")?;
+        Ok(ElementsD(bitcoind))
     }
 
     pub fn client(&self) -> &Client {
@@ -117,20 +138,20 @@ impl ElementsD {
 
 /// Returns the daemons executable path, if it's provided as a feature or as `ELEMENTSD_EXE` env var
 /// If both are set, the one provided by the feature is returned
-pub fn exe_path() -> Result<String, Error> {
+pub fn exe_path() -> anyhow::Result<String> {
     match (downloaded_exe_path(), std::env::var("ELEMENTSD_EXE")) {
-        (Ok(_), Ok(_)) => Err(Error::BothFeatureAndEnvVar),
+        (Ok(_), Ok(_)) => Err(Error::BothFeatureAndEnvVar.into()),
         (Ok(path), Err(_)) => Ok(path),
         (Err(_), Ok(path)) => Ok(path),
         (Err(_), Err(_)) => which::which("elementsd")
-            .map_err(|_| Error::NoElementsdExecutableFound)
+            .map_err(|_| Error::NoElementsdExecutableFound.into())
             .map(|p| p.display().to_string()),
     }
 }
 
 #[cfg(feature = "download")]
 /// Provide the bitcoind executable path if a version feature has been specified
-pub fn downloaded_exe_path() -> Result<String, Error> {
+pub fn downloaded_exe_path() -> anyhow::Result<String> {
     Ok(format!(
         "{}/elements/elements-{}/bin/elementsd",
         env!("OUT_DIR"),
@@ -138,8 +159,8 @@ pub fn downloaded_exe_path() -> Result<String, Error> {
     ))
 }
 #[cfg(not(feature = "download"))]
-pub fn downloaded_exe_path() -> Result<String, Error> {
-    Err(Error::NoFeature)
+pub fn downloaded_exe_path() -> anyhow::Result<String> {
+    Err(Error::NoFeature.into())
 }
 
 impl From<bitcoind::Error> for Error {
