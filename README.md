@@ -27,5 +27,12 @@ See the similar [BitcoinD](https://github.com/RCasatta/bitcoind) for details
 
 ## MSRV
 
-- 1.41.1 without features
 - 1.57.0 with one of the auto download features
+- 1.41.1 without features
+
+MSRV 1.41.1 also requires following deps
+```sh
+cargo update -p which --precise 4.3.0
+cargo update -p serde --precise 1.0.152
+cargo update -p tempfile --precise 3.3.0
+```
