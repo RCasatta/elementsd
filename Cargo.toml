@@ -19,9 +19,9 @@ which = "4.2.5"  # TODO use bitcoind re-export when available
 env_logger = "0.8"
 
 [build-dependencies]
-ureq = "1.0"  # allows to keep MSRV 1.41.1
 bitcoin_hashes = "0.11.0"
 flate2 = "1.0"
+minreq = { version = "2.6.0", default-features = false, features = ["https"]}
 tar = "0.4"
 
 [features]
