@@ -12,21 +12,22 @@ documentation = "https://docs.rs/elementsd/"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bitcoind = "0.27.0"
+bitcoind = "0.29.0"
 which = "4.2.5"  # TODO use bitcoind re-export when available
 
 [dev-dependencies]
-env_logger = "0.8"
+env_logger = "0.9"
 
 [build-dependencies]
-bitcoin_hashes = "0.11.0"
-flate2 = "1.0"
-minreq = { version = "2.6.0", default-features = false, features = ["https"]}
-tar = "0.4"
+bitcoin_hashes = { version = "0.12.0", optional = true }
+flate2 = { version = "1.0", optional = true }
+minreq = { version = "2.6.0", default-features = false, features = ["https"], optional = true }
+tar = { version = "0.4", optional = true }
 
 [features]
-"0_21_0" = []
-"0_18_1_12" = []
+download = [ "bitcoin_hashes", "flate2", "minreq", "tar" ]
+"0_21_0" = [ "download" ]
+"0_18_1_12" = [ "download" ]
 
 bitcoind_22_0 = ["bitcoind/22_0"]
 bitcoind_0_21_1 = ["bitcoind/0_21_1"]

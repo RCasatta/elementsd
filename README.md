@@ -23,3 +23,9 @@ See test [`test_elementsd_with_validatepegin`](https://github.com/RCasatta/eleme
 
 
 See the similar [BitcoinD](https://github.com/RCasatta/bitcoind) for details
+
+
+## MSRV
+
+- 1.41.1 without features
+- 1.57.0 with one of the auto download features

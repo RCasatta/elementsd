@@ -94,7 +94,7 @@ impl ElementsD {
 
     /// Launch the elementsd process from the given `exe` executable with given [Conf] param
     pub fn with_conf<S: AsRef<OsStr>>(exe: S, conf: &Conf) -> Result<ElementsD, Error> {
-        Ok(ElementsD(BitcoinD::with_conf(exe, &conf.0)?))
+        Ok(ElementsD(BitcoinD::with_conf(exe, &conf.0).unwrap()))  // TODO unwrap temporary
     }
 
     pub fn client(&self) -> &Client {
