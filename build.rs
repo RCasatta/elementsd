@@ -4,14 +4,17 @@
 // https://github.com/ElementsProject/elements/releases/download/elements-0.18.1.12/elements-0.18.1.12-osx64.tar.gz
 
 #[cfg(not(feature = "download"))]
+mod download {}
+
+#[cfg(any(not(feature = "download"), feature = "doc"))]
 fn main() {}
 
-#[cfg(feature = "download")]
+#[cfg(all(feature = "download", not(feature = "doc")))]
 fn main() {
     download::start();
 }
 
-#[cfg(feature = "download")]
+#[cfg(all(feature = "download", not(feature = "doc")))]
 mod download {
     use bitcoin_hashes::{sha256, Hash};
     use flate2::read::GzDecoder;

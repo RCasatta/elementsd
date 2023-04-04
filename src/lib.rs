@@ -1,3 +1,6 @@
+#![cfg_attr(feature = "doc", cfg_attr(all(), doc = include_str!("../README.md")))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+
 use bitcoind::bitcoincore_rpc::Client;
 use bitcoind::{
     anyhow::{self, Context},

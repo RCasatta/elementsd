@@ -7,11 +7,12 @@ Utility to run a liquidregtest elementsd process, useful in integration testing 
 
 
 ```rust
-let exe = exe_path().expect("elementsd executable must be provided in ELEMENTSD_EXE, or with a feature like '0_21_0', or be in PATH");
-let elementsd = ElementsD::new(exe).unwrap();
+use elementsd::bitcoincore_rpc::RpcApi;
+let exe = elementsd::exe_path().expect("elementsd executable must be provided in ELEMENTSD_EXE, or with a feature like '0_21_0', or be in PATH");
+let elementsd = elementsd::ElementsD::new(exe).unwrap();
 let info = elementsd
     .client()
-    .call::<Value>("getblockchaininfo", &[])
+    .call::<bitcoind::bitcoincore_rpc::jsonrpc::serde_json::Value>("getblockchaininfo", &[])
     .unwrap();
 assert_eq!(info.get("chain").unwrap(), "liquidregtest");
 ```
@@ -24,6 +25,13 @@ See test [`test_elementsd_with_validatepegin`](https://github.com/RCasatta/eleme
 
 See the similar [BitcoinD](https://github.com/RCasatta/bitcoind) for details
 
+## Doc
+
+To build docs:
+
+```sh
+RUSTDOCFLAGS="--cfg docsrs" cargo +nightly doc --features download,doc --open
+```
 
 ## MSRV
 

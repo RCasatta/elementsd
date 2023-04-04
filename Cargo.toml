@@ -8,9 +8,6 @@ license = "MIT"
 repository = "https://github.com/RCasatta/elementsd"
 documentation = "https://docs.rs/elementsd/"
 
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 bitcoind = "0.30.0"
 
@@ -40,3 +37,9 @@ bitcoind_0_19_0_1 = ["bitcoind/0_19_0_1"]
 bitcoind_0_18_1 = ["bitcoind/0_18_1"]
 bitcoind_0_18_0 = ["bitcoind/0_18_0"]
 
+"doc" = [] # used only for documentation building
+
+
+[package.metadata.docs.rs]
+features = ["download", "doc"]
+rustdoc-args = ["--cfg", "docsrs"]
