@@ -6,6 +6,7 @@ use std::fmt;
 pub use bitcoind;
 pub use bitcoind::bitcoincore_rpc;
 
+#[cfg(feature = "download")]
 mod versions;
 
 pub struct ElementsD(BitcoinD);
@@ -127,17 +128,18 @@ pub fn exe_path() -> Result<String, Error> {
     }
 }
 
+#[cfg(feature = "download")]
 /// Provide the bitcoind executable path if a version feature has been specified
 pub fn downloaded_exe_path() -> Result<String, Error> {
-    if versions::HAS_FEATURE {
-        Ok(format!(
-            "{}/elements/elements-{}/bin/elementsd",
-            env!("OUT_DIR"),
-            versions::VERSION
-        ))
-    } else {
-        Err(Error::NoFeature)
-    }
+    Ok(format!(
+        "{}/elements/elements-{}/bin/elementsd",
+        env!("OUT_DIR"),
+        versions::VERSION
+    ))
+}
+#[cfg(not(feature = "download"))]
+pub fn downloaded_exe_path() -> Result<String, Error> {
+    Err(Error::NoFeature)
 }
 
 impl From<bitcoind::Error> for Error {
