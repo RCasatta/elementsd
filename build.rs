@@ -38,6 +38,7 @@ mod download {
 
     fn get_expected_sha256(filename: &str) -> Result<sha256::Hash, ()> {
         let sha256sums_filename = format!("sha256/SHA256SUMS_{}.asc", &VERSION);
+        println!("{}", sha256sums_filename);
         let file = File::open(sha256sums_filename).map_err(|_| ())?;
         for line in BufReader::new(file).lines().flatten() {
             let tokens: Vec<_> = line.split("  ").collect();
