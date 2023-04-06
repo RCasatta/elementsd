@@ -12,7 +12,7 @@ documentation = "https://docs.rs/elementsd/"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bitcoind = "0.29.0"
+bitcoind = "0.30.0"
 
 [dev-dependencies]
 env_logger = "0.9"
@@ -25,8 +25,8 @@ tar = { version = "0.4", optional = true }
 
 [features]
 download = [ "bitcoin_hashes", "flate2", "minreq", "tar" ]
-"22_1_1" = [ "download" ]
-"0_21_0" = [ "download" ]
+"22_1_1" = [ "download", "0_21_0" ]
+"0_21_0" = [ "download", "0_18_1_12" ]
 "0_18_1_12" = [ "download" ]
 
 bitcoind_23_0 = ["bitcoind/23_0"]
