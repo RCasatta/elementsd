@@ -68,7 +68,7 @@ mod download {
                 download_filename, VERSION, expected_hash
             );
 
-            let version = if cfg!(feature = "0_21_0") {
+            let version = if cfg!(all(feature = "0_21_0", not(feature = "22_1_1"))) {
                 "0.21.0"
             } else {
                 VERSION
