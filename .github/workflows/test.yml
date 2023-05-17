@@ -1,12 +1,11 @@
 name: Test
 
 on:
-  pull_request:
-    branches:
-      - master
   push:
     branches:
       - master
+  pull_request: {}
+
 
 env:
   CARGO_TERM_COLOR: always
@@ -24,40 +23,27 @@ jobs:
         feature: [ "bitcoind_22_0,0_18_1_12", "bitcoind_22_0,0_21_0", "bitcoind_22_0,22_1_1"]
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: Swatinem/rust-cache@v1.2.0
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.feature }}${{ matrix.os }}
         if: ${{ matrix.os != 'macos-10.15' }} # issue with hard-links on mac
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --features ${{ matrix.feature }}
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --features ${{ matrix.feature }}
       - run: echo "BITCOIND_EXE=$(find ./target/debug -name bitcoind)" >> $GITHUB_ENV
       - run: echo "ELEMENTSD_EXE=$(find ./target/debug -name elementsd)" >> $GITHUB_ENV
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
+      - run: cargo test
 
   cosmetics:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: Swatinem/rust-cache@v1.2.0
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          override: true
-          profile: minimal
           components: rustfmt, clippy
-      - name: fmt
-        run: cargo fmt -- --check
-      - name: clippy
-        run: cargo clippy -- -D warnings
+      - run: cargo fmt -- --check
+      - run: cargo clippy -- -D warnings
 
   rust-version:
     runs-on: ubuntu-20.04
@@ -67,26 +53,14 @@ jobs:
         toolchain: [ "1.41.1", "stable", "nightly" ]
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: Swatinem/rust-cache@v1.2.0
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.version }}
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.toolchain }}
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: update 
-          args: -p which --precise 4.3.0
-      - uses: actions-rs/cargo@v1
-        with:
-          command: update
-          args: -p tempfile --precise 3.3.0
-      - uses: actions-rs/cargo@v1
-        with:
-          command: update
-          args: -p serde --precise 1.0.152
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
+      - run: cargo update -p which --precise 4.3.0
+      - run: cargo update -p tempfile --precise 3.3.0
+      - run: cargo update -p serde --precise 1.0.152
+      - run: cargo build
