@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ "ubuntu-20.04", "macos-10.15" ]
+        os: [ "ubuntu-20.04", "macos-12" ]
         feature: [ "bitcoind_22_0,0_18_1_12", "bitcoind_22_0,0_21_0", "bitcoind_22_0,22_1_1"]
 
     steps:
@@ -27,7 +27,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.feature }}${{ matrix.os }}
-        if: ${{ matrix.os != 'macos-10.15' }} # issue with hard-links on mac
+        if: ${{ matrix.os != 'macos-12' }} # issue with hard-links on mac
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo test --features ${{ matrix.feature }}
       - run: echo "BITCOIND_EXE=$(find ./target/debug -name bitcoind)" >> $GITHUB_ENV
