@@ -19,8 +19,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ "ubuntu-20.04", "macos-12" ]
-        feature: [ "bitcoind_22_0,0_18_1_12", "bitcoind_22_0,0_21_0", "bitcoind_22_0,22_1_1"]
+        os: ["ubuntu-20.04", "macos-12"]
+        feature:
+          - "bitcoind_22_0,0_18_1_12"
+          - "bitcoind_22_0,0_21_0"
+          - "bitcoind_22_0,22_1_1"
 
     steps:
       - uses: actions/checkout@v3
@@ -50,7 +53,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        toolchain: [ "1.41.1", "stable", "nightly" ]
+        toolchain: ["1.41.1", "stable", "nightly"]
 
     steps:
       - uses: actions/checkout@v3
@@ -60,7 +63,14 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.toolchain }}
-      - run: cargo update -p which --precise 4.3.0
-      - run: cargo update -p tempfile --precise 3.3.0
-      - run: cargo update -p serde --precise 1.0.152
+      - name: pinning deps
+        run: |
+          cargo update -p which --precise 4.3.0
+          cargo update -p tempfile --precise 3.3.0
+          cargo update -p serde_json --precise 1.0.99
+          cargo update -p serde --precise 1.0.156
+          cargo update -p quote --precise 1.0.30
+          cargo update -p proc-macro2 --precise 1.0.65
+          cargo update -p log --precise 0.4.18
+        if: ${{ matrix.toolchain == '1.41.1' }}
       - run: cargo build
