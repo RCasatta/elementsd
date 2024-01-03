@@ -21,9 +21,10 @@ jobs:
       matrix:
         os: ["ubuntu-20.04", "macos-12"]
         feature:
-          - "bitcoind_22_0,0_18_1_12"
-          - "bitcoind_22_0,0_21_0"
-          - "bitcoind_22_0,22_1_1"
+          - "bitcoind_0_19_1,0_18_1_12"
+          - "bitcoind_23_1,22_1_1"
+          - "bitcoind_24_0_1,22_1_1"
+          - "bitcoind_25_1,22_1_1"
 
     steps:
       - uses: actions/checkout@v3
