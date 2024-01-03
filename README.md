@@ -36,11 +36,8 @@ RUSTDOCFLAGS="--cfg docsrs" cargo +nightly doc --features download,doc --open
 ## MSRV
 
 - 1.57.0 with one of the auto download features
-- 1.41.1 without features
+- 1.56.1 without features
 
-MSRV 1.41.1 also requires following deps
-```sh
-cargo update -p which --precise 4.3.0
-cargo update -p serde --precise 1.0.152
-cargo update -p tempfile --precise 3.3.0
-```
+MSRV 1.56.1 may require downgrading dependencies. See our
+`.github/workflows/test.yml` file for a complete list.
+
