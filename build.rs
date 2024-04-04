@@ -52,6 +52,10 @@ mod download {
         Err(())
     }
     pub fn start() {
+        if std::env::var_os("ELEMENTSD_SKIP_DOWNLOAD").is_some() {
+            return;
+        }
+
         let download_filename = download_filename();
         println!("{}", download_filename);
         let expected_hash = get_expected_sha256(&download_filename).unwrap();

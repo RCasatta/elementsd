@@ -25,6 +25,12 @@ See test [`test_elementsd_with_validatepegin`](https://github.com/RCasatta/eleme
 
 See the similar [BitcoinD](https://github.com/RCasatta/bitcoind) for details
 
+
+## Nix
+
+For determinisim, in nix you cannot hit the internet within the `build.rs`. Moreover, some downstream crates cannot remove the auto-download feature from their dev-deps. In this case you can set the `ELEMENTSD_SKIP_DOWNLOAD` env var and provide the `elementsd` executable in the `PATH` (or skip the test execution).
+
+
 ## Doc
 
 To build docs:

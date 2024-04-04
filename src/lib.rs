@@ -34,6 +34,8 @@ pub enum Error {
     /// Returned when calling methods requiring the `elementsd` executable but none is found
     /// (no feature, no `ELEMENTSD_EXE`, no `elementsd` in `PATH` )
     NoElementsdExecutableFound,
+    /// Returned when the auto-download feature is used but `ELEMENTSD_SKIP_DOWNLOAD` is set
+    SkipDownload,
 }
 
 impl error::Error for Error {
@@ -53,6 +55,7 @@ impl fmt::Debug for Error {
             Error::NoEnvVar => write!(f, "Called a method requiring env var `ELEMENTSD_EXE` to be set, but it's not"),
             Error::BothFeatureAndEnvVar => write!(f, "Called a method requiring env var `ELEMENTSD_EXE` or a feature to be set, but both are set"),
             Error::NoElementsdExecutableFound =>  write!(f, "Called a method requiring env var `ELEMENTSD_EXE` or a feature to be set or `elementsd` executable in path"),
+            Error::SkipDownload =>  write!(f, "the auto-download feature is used but `ELEMENTSD_SKIP_DOWNLOAD` is set"),
         }
     }
 }
@@ -155,11 +158,15 @@ pub fn exe_path() -> anyhow::Result<String> {
 #[cfg(feature = "download")]
 /// Provide the bitcoind executable path if a version feature has been specified
 pub fn downloaded_exe_path() -> anyhow::Result<String> {
-    Ok(format!(
-        "{}/elements/elements-{}/bin/elementsd",
-        env!("OUT_DIR"),
-        versions::VERSION
-    ))
+    if std::env::var_os("ELECTRSD_SKIP_DOWNLOAD").is_some() {
+        Err(Error::SkipDownload.into())
+    } else {
+        Ok(format!(
+            "{}/elements/elements-{}/bin/elementsd",
+            env!("OUT_DIR"),
+            versions::VERSION
+        ))
+    }
 }
 #[cfg(not(feature = "download"))]
 pub fn downloaded_exe_path() -> anyhow::Result<String> {
