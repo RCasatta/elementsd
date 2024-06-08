@@ -158,7 +158,7 @@ pub fn exe_path() -> anyhow::Result<String> {
 #[cfg(feature = "download")]
 /// Provide the bitcoind executable path if a version feature has been specified
 pub fn downloaded_exe_path() -> anyhow::Result<String> {
-    if std::env::var_os("ELECTRSD_SKIP_DOWNLOAD").is_some() {
+    if std::env::var_os("ELEMENTSD_SKIP_DOWNLOAD").is_some() {
         Err(Error::SkipDownload.into())
     } else {
         Ok(format!(
