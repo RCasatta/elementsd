@@ -1,6 +1,6 @@
 [package]
 name = "elementsd"
-version = "0.9.1"
+version = "0.10.0"
 edition = "2018"
 authors = ["Riccardo Casatta <riccardo@casatta.it>"]
 description = "Utility to run a liquidregtest elements process, useful in integration testing environment"
@@ -9,7 +9,7 @@ repository = "https://github.com/RCasatta/elementsd"
 documentation = "https://docs.rs/elementsd/"
 
 [dependencies]
-bitcoind = "0.34.0"
+bitcoind = "0.36.0"
 
 [dev-dependencies]
 env_logger = "0.9"
