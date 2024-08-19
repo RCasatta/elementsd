@@ -1,6 +1,6 @@
 [package]
 name = "elementsd"
-version = "0.9.1"
+version = "0.9.2"
 edition = "2018"
 authors = ["Riccardo Casatta <riccardo@casatta.it>"]
 description = "Utility to run a liquidregtest elements process, useful in integration testing environment"
@@ -17,14 +17,16 @@ env_logger = "0.9"
 [build-dependencies]
 bitcoin_hashes = { version = "0.12.0", optional = true }
 flate2 = { version = "1.0", optional = true }
-minreq = { version = "2.6.0", default-features = false, features = ["https"], optional = true }
+minreq = { version = "2.6.0", default-features = false, features = [
+    "https",
+], optional = true }
 tar = { version = "0.4", optional = true }
 
 [features]
-download = [ "bitcoin_hashes", "flate2", "minreq", "tar" ]
-"22_1_1" = [ "download", "0_21_0" ]
-"0_21_0" = [ "download", "0_18_1_12" ]
-"0_18_1_12" = [ "download" ]
+download = ["bitcoin_hashes", "flate2", "minreq", "tar"]
+"22_1_1" = ["download", "0_21_0"]
+"0_21_0" = ["download", "0_18_1_12"]
+"0_18_1_12" = ["download"]
 
 bitcoind_25_1 = ["bitcoind/25_1"]
 bitcoind_25_0 = ["bitcoind/25_0"]
