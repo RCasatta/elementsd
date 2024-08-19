@@ -30,9 +30,6 @@ pub enum Error {
     /// Returned when calling methods requiring a env var to exist, but it's not
     NoEnvVar,
     /// Returned when calling methods requiring either a feature or anv var, but both are present
-    BothFeatureAndEnvVar,
-    /// Returned when calling methods requiring the `elementsd` executable but none is found
-    /// (no feature, no `ELEMENTSD_EXE`, no `elementsd` in `PATH` )
     NoElementsdExecutableFound,
     /// Returned when the auto-download feature is used but `ELEMENTSD_SKIP_DOWNLOAD` is set
     SkipDownload,
@@ -53,7 +50,6 @@ impl fmt::Debug for Error {
             Error::BitcoinD(e) => write!(f, "{:?}", e),
             Error::NoFeature => write!(f, "Called a method requiring a feature to be set, but it's not"),
             Error::NoEnvVar => write!(f, "Called a method requiring env var `ELEMENTSD_EXE` to be set, but it's not"),
-            Error::BothFeatureAndEnvVar => write!(f, "Called a method requiring env var `ELEMENTSD_EXE` or a feature to be set, but both are set"),
             Error::NoElementsdExecutableFound =>  write!(f, "Called a method requiring env var `ELEMENTSD_EXE` or a feature to be set or `elementsd` executable in path"),
             Error::SkipDownload =>  write!(f, "the auto-download feature is used but `ELEMENTSD_SKIP_DOWNLOAD` is set"),
         }
@@ -142,16 +138,20 @@ impl ElementsD {
     }
 }
 
-/// Returns the daemons executable path, if it's provided as a feature or as `ELEMENTSD_EXE` env var
-/// If both are set, the one provided by the feature is returned
+/// Returns the daemons executable path if known with the following priority:
+///
+/// - if it's provided as a feature or as `ELEMENTSD_EXE` env var
+/// - if it's downloaded via a feature set
+/// - if it's in the path
 pub fn exe_path() -> anyhow::Result<String> {
-    match (downloaded_exe_path(), std::env::var("ELEMENTSD_EXE")) {
-        (Ok(_), Ok(_)) => Err(Error::BothFeatureAndEnvVar.into()),
-        (Ok(path), Err(_)) => Ok(path),
-        (Err(_), Ok(path)) => Ok(path),
-        (Err(_), Err(_)) => which::which("elementsd")
+    if let Ok(path) = std::env::var("ELEMENTSD_EXE") {
+        Ok(path)
+    } else if let Ok(path) = downloaded_exe_path() {
+        Ok(path)
+    } else {
+        which::which("elementsd")
             .map_err(|_| Error::NoElementsdExecutableFound.into())
-            .map(|p| p.display().to_string()),
+            .map(|p| p.display().to_string())
     }
 }
 
